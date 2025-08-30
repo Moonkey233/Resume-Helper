@@ -4,9 +4,10 @@
 // @version      1.0.0
 // @description  Moonkey简历助手
 // @author       Moonkey233
-// @match        *
+// @match        *://*/*
 // @grant        none
 // @run-at       document-idle
+// @include      *
 // ==/UserScript==
 
 (function () {
@@ -73,7 +74,7 @@
             return block.title === name;
         });
     }
-    
+
     // 检查按钮名称在版块内是否唯一
     function isButtonNameUnique(name, buttons, excludeName = null) {
         return !buttons.some(button => {
@@ -157,7 +158,7 @@
     .orh-input, .orh-select, .orh-textarea { width:100%; padding:6px 8px; border-radius:6px; border:1px solid rgba(255,255,255,0.06); background:transparent; color:inherit }
     .orh-row { display:flex; gap:6px; align-items:center; margin-bottom:6px }
     .orh-mini { position: fixed; right: 16px; bottom: 16px; width:44px; height:44px; border-radius:50%; background:#0f1724; display:flex; align-items:center; justify-content:center; color:#e6eef8; box-shadow:0 6px 18px rgba(2,6,23,0.6); cursor:pointer; z-index:2147483648 }
-    
+
     /* 防止按钮点击时颜色变化 */
     .orh-btn:active, .orh-action-button:active, .orh-control-small:active {
         background: inherit !important;
@@ -195,7 +196,7 @@
     const importBtn = container.querySelector('#orh_import');
     const exportBtn = container.querySelector('#orh_export');
     const miniBtn = container.querySelector('#orh_mini');
-    
+
     // Draggable
     (function makeDraggable(node, handle) {
         let isDown = false, startX=0, startY=0, origX=0, origY=0;
@@ -204,7 +205,7 @@
             if (e.target.closest('.orh-actions')) {
                 return;
             }
-            
+
             isDown = true;
             try { handle.setPointerCapture(e.pointerId); } catch (err) {}
             startX = e.clientX; startY = e.clientY;
@@ -238,19 +239,19 @@
             titleRow.className = 'orh-block-title';
             const titleInput = document.createElement('input');
             titleInput.value = block.title || '未命名版块';
-            
+
             // 只在失去焦点时检查和保存
             titleInput.addEventListener('blur', () => {
                 const newTitle = titleInput.value.trim();
                 if (!newTitle) return;
-                
+
                 // 检查名称是否唯一（排除自身）
                 if (!isBlockNameUnique(newTitle, state.blocks, block.title)) {
                     alert('版块名称已存在，请使用不同的名称');
                     titleInput.value = block.title;
                     return;
                 }
-                
+
                 block.title = newTitle;
                 saveData(state);
                 render();
@@ -296,20 +297,20 @@
                     act.className = 'orh-action-button';
                     act.textContent = btn.name || 'unnamed';
                     act.title = (btn.type === 'text' ? '文本按钮：点击会填入输入框并复制到剪贴板' : '路径按钮：复制路径');
-                    
+
                     act.addEventListener('mousedown', (e) => {
                         e.preventDefault();
                         act.style.opacity = '0.8';
                     });
-                    
+
                     act.addEventListener('mouseup', () => {
                         act.style.opacity = '';
                     });
-                    
+
                     act.addEventListener('click', async (e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        
+
                         if (btn.type === 'text') {
                             const ok = insertTextToElement(lastFocusedElement, btn.content);
                             await copyToClipboard(btn.content || '');
@@ -322,43 +323,43 @@
 
                     const ctlWrap = document.createElement('div');
                     ctlWrap.className = 'orh-controls';
-                    const editBtn = document.createElement('button'); 
-                    editBtn.type='button'; 
-                    editBtn.className='orh-control-small'; 
+                    const editBtn = document.createElement('button');
+                    editBtn.type='button';
+                    editBtn.className='orh-control-small';
                     editBtn.textContent='编辑';
-                    
+
                     editBtn.addEventListener('mousedown', (e) => {
                         e.preventDefault();
                         editBtn.style.opacity = '0.8';
                     });
-                    
+
                     editBtn.addEventListener('mouseup', () => {
                         editBtn.style.opacity = '';
                     });
-                    
+
                     editBtn.addEventListener('click', () => openEditPanel(block.title, btn.name));
-                    
-                    const delBtn = document.createElement('button'); 
-                    delBtn.type='button'; 
-                    delBtn.className='orh-control-small'; 
+
+                    const delBtn = document.createElement('button');
+                    delBtn.type='button';
+                    delBtn.className='orh-control-small';
                     delBtn.textContent='删除';
-                    
+
                     delBtn.addEventListener('mousedown', (e) => {
                         e.preventDefault();
                         delBtn.style.opacity = '0.8';
                     });
-                    
+
                     delBtn.addEventListener('mouseup', () => {
                         delBtn.style.opacity = '';
                     });
-                    
+
                     delBtn.addEventListener('click', () => {
                         block.buttons = (block.buttons || []).filter(x => x.name !== btn.name);
                         saveData(state);
                         render();
                     });
-                    
-                    ctlWrap.appendChild(editBtn); 
+
+                    ctlWrap.appendChild(editBtn);
                     ctlWrap.appendChild(delBtn);
 
                     row.appendChild(act);
@@ -389,19 +390,19 @@
                 contentRow.appendChild(contentInput);
 
                 const pasteBtn = document.createElement('button');
-                pasteBtn.type='button'; 
-                pasteBtn.className='orh-control-small'; 
+                pasteBtn.type='button';
+                pasteBtn.className='orh-control-small';
                 pasteBtn.textContent='从剪贴板粘贴';
-                
+
                 pasteBtn.addEventListener('mousedown', (e) => {
                     e.preventDefault();
                     pasteBtn.style.opacity = '0.8';
                 });
-                
+
                 pasteBtn.addEventListener('mouseup', () => {
                     pasteBtn.style.opacity = '';
                 });
-                
+
                 pasteBtn.addEventListener('click', async () => {
                     try {
                         const t = await navigator.clipboard.readText();
@@ -412,45 +413,45 @@
                 contentRow.appendChild(pasteBtn);
                 inner.appendChild(contentRow);
 
-                const addBtnRow = document.createElement('div'); 
-                addBtnRow.style.display='flex'; 
-                addBtnRow.style.gap='6px'; 
+                const addBtnRow = document.createElement('div');
+                addBtnRow.style.display='flex';
+                addBtnRow.style.gap='6px';
                 addBtnRow.style.marginTop='6px';
-                
-                const addBtn = document.createElement('button'); 
-                addBtn.type='button'; 
-                addBtn.className='orh-btn'; 
+
+                const addBtn = document.createElement('button');
+                addBtn.type='button';
+                addBtn.className='orh-btn';
                 addBtn.textContent='新增按钮';
-                
+
                 addBtn.addEventListener('mousedown', (e) => {
                     e.preventDefault();
                     addBtn.style.opacity = '0.8';
                 });
-                
+
                 addBtn.addEventListener('mouseup', () => {
                     addBtn.style.opacity = '';
                 });
-                
+
                 addBtn.addEventListener('click', () => {
                     const name = nameInput.value && nameInput.value.trim();
                     const type = typeSelect.value;
                     const content = contentInput.value && contentInput.value.trim();
-                    
-                    if (!name) { 
-                        alert('请填写按钮名称'); 
-                        return; 
+
+                    if (!name) {
+                        alert('请填写按钮名称');
+                        return;
                     }
-                    
+
                     // 检查按钮名称是否唯一
                     if (!isButtonNameUnique(name, block.buttons || [])) {
                         alert('此版块中已存在同名按钮，请使用不同的名称');
                         return;
                     }
-                    
-                    if (!content) { 
-                        if (!confirm('您未填写内容，是否创建空内容按钮？')) return; 
+
+                    if (!content) {
+                        if (!confirm('您未填写内容，是否创建空内容按钮？')) return;
                     }
-                    
+
                     const newBtn = { type, name, content: content || '' };
                     block.buttons = block.buttons || [];
                     block.buttons.push(newBtn);
@@ -459,7 +460,7 @@
                     contentInput.value = '';
                     render();
                 });
-                
+
                 addBtnRow.appendChild(addBtn);
                 inner.appendChild(addBtnRow);
 
@@ -481,10 +482,10 @@
     function flashTemp(el, text) {
         const original = el.textContent;
         const originalBg = el.style.backgroundColor;
-        
+
         el.textContent = text;
         el.style.backgroundColor = '#3a5a99';
-        
+
         setTimeout(() => {
             el.textContent = original;
             el.style.backgroundColor = originalBg;
@@ -509,52 +510,52 @@
         modal.style.zIndex = 2147483649;
 
         modal.innerHTML = `<div style="font-weight:600;margin-bottom:8px">编辑按钮</div>`;
-        const nameIn = document.createElement('input'); 
-        nameIn.className='orh-input'; 
+        const nameIn = document.createElement('input');
+        nameIn.className='orh-input';
         nameIn.value = btn.name;
-        
-        const typeIn = document.createElement('select'); 
+
+        const typeIn = document.createElement('select');
         typeIn.className='orh-select';
         const o1 = document.createElement('option'); o1.value='text'; o1.text='文本按钮';
         const o2 = document.createElement('option'); o2.value='path'; o2.text='路径按钮';
         typeIn.appendChild(o1); typeIn.appendChild(o2);
         typeIn.value = btn.type;
-        
-        const cont = document.createElement('textarea'); 
-        cont.className='orh-textarea'; 
+
+        const cont = document.createElement('textarea');
+        cont.className='orh-textarea';
         cont.value = btn.content || '';
         cont.placeholder = "对于路径按钮，输入类似'D:\\Downloads'的路径";
-        
-        const save = document.createElement('button'); 
-        save.type='button'; 
-        save.className='orh-btn'; 
+
+        const save = document.createElement('button');
+        save.type='button';
+        save.className='orh-btn';
         save.textContent='保存';
-        
-        const can = document.createElement('button'); 
-        can.type='button'; 
-        can.className='orh-btn'; 
+
+        const can = document.createElement('button');
+        can.type='button';
+        can.className='orh-btn';
         can.textContent='取消';
-        
+
         [save, can].forEach(btn => {
             btn.addEventListener('mousedown', (e) => {
                 e.preventDefault();
                 btn.style.opacity = '0.8';
             });
-            
+
             btn.addEventListener('mouseup', () => {
                 btn.style.opacity = '';
             });
         });
-        
+
         save.addEventListener('click', () => {
             const newName = nameIn.value.trim() || btn.name;
-            
+
             // 检查名称是否唯一（如果名称有变化）
             if (newName !== btn.name && !isButtonNameUnique(newName, block.buttons, btn.name)) {
                 alert('此版块中已存在同名按钮，请使用不同的名称');
                 return;
             }
-            
+
             btn.name = newName;
             btn.type = typeIn.value;
             btn.content = cont.value;
@@ -562,20 +563,20 @@
             modal.remove();
             render();
         });
-        
+
         can.addEventListener('click', () => modal.remove());
-        
+
         modal.appendChild(nameIn);
         modal.appendChild(typeIn);
         modal.appendChild(cont);
-        
+
         const btnRow = document.createElement('div');
         btnRow.style.display = 'flex';
         btnRow.style.gap = '8px';
         btnRow.style.marginTop = '8px';
         btnRow.appendChild(save);
         btnRow.appendChild(can);
-        
+
         modal.appendChild(btnRow);
         card.appendChild(modal);
     }
@@ -585,13 +586,13 @@
         const defaultName = "新版块";
         let newName = defaultName;
         let counter = 1;
-        
+
         // 确保名称唯一
         while (!isBlockNameUnique(newName, state.blocks)) {
             newName = `${defaultName}(${counter})`;
             counter++;
         }
-        
+
         const newBlock = { title: newName, collapsed: false, buttons: [] };
         state.blocks.push(newBlock);
         saveData(state);
@@ -603,32 +604,32 @@
     }
 
     function handleImport() {
-        const fi = document.createElement('input'); 
-        fi.type='file'; 
-        fi.accept='application/json'; 
+        const fi = document.createElement('input');
+        fi.type='file';
+        fi.accept='application/json';
         fi.style.display='none';
-        
+
         fi.addEventListener('change', (e) => {
             const f = fi.files && fi.files[0];
             if (!f) return;
-            
+
             const reader = new FileReader();
             reader.onload = (evt) => {
                 try {
                     const parsed = JSON.parse(evt.target.result);
-                    if (!parsed || typeof parsed !== 'object') { 
-                        alert('导入文件内容不合法'); 
-                        return; 
+                    if (!parsed || typeof parsed !== 'object') {
+                        alert('导入文件内容不合法');
+                        return;
                     }
-                    
+
                     if (Array.isArray(parsed.blocks)) {
                         let importedBlocks = 0;
                         let importedButtons = 0;
-                        
+
                         parsed.blocks.forEach(importBlock => {
                             // 查找现有版块中是否有同名版块
                             const existingBlock = state.blocks.find(block => block.title === importBlock.title);
-                            
+
                             if (existingBlock) {
                                 // 存在同名版块，则遍历导入版块的按钮
                                 if (Array.isArray(importBlock.buttons)) {
@@ -653,7 +654,7 @@
                                     collapsed: typeof importBlock.collapsed === 'boolean' ? importBlock.collapsed : true,
                                     buttons: []
                                 };
-                                
+
                                 if (Array.isArray(importBlock.buttons)) {
                                     importBlock.buttons.forEach(bt => {
                                         newBlock.buttons.push({
@@ -664,12 +665,12 @@
                                         importedButtons++;
                                     });
                                 }
-                                
+
                                 state.blocks.push(newBlock);
                                 importedBlocks++;
                             }
                         });
-                        
+
                         saveData(state);
                         render();
                         alert(`导入成功：新增 ${importedBlocks} 个版块，新增 ${importedButtons} 个按钮（跳过重复内容）`);
@@ -677,13 +678,13 @@
                         alert('导入文件中没有 blocks 数组，导入无效。');
                     }
                 } catch (err) {
-                    console.error(err); 
+                    console.error(err);
                     alert('导入失败：解析 JSON 出错');
                 }
             };
             reader.readAsText(f);
         });
-        
+
         document.body.appendChild(fi);
         fi.click();
         fi.remove();
@@ -701,7 +702,7 @@
                 }))
             }))
         };
-        
+
         const dataStr = JSON.stringify(exportData, null, 2);
         const blob = new Blob([dataStr], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
@@ -719,25 +720,25 @@
             e.preventDefault();
             btn.style.opacity = '0.8';
         });
-        
+
         btn.addEventListener('mouseup', () => {
             btn.style.opacity = '';
         });
     });
-    
+
     addBlockBtn.addEventListener('click', handleAddBlock);
     toggleBtn.addEventListener('click', handleToggle);
     importBtn.addEventListener('click', handleImport);
     exportBtn.addEventListener('click', handleExport);
 
-    function showMini() { 
-        card.style.display = 'none'; 
-        miniBtn.style.display = 'flex'; 
+    function showMini() {
+        card.style.display = 'none';
+        miniBtn.style.display = 'flex';
     }
-    
-    function showCard() { 
-        card.style.display = ''; 
-        miniBtn.style.display = 'none'; 
+
+    function showCard() {
+        card.style.display = '';
+        miniBtn.style.display = 'none';
     }
 
     miniBtn.addEventListener('click', (e) => {
