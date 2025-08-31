@@ -5,7 +5,8 @@
 // @description  Moonkey简历助手
 // @author       Moonkey233
 // @match        *://*/*
-// @grant        none
+// @grant        GM_setValue
+// @grant        GM_getValue
 // @run-at       document-idle
 // @include      *
 // ==/UserScript==
@@ -19,9 +20,8 @@
     // --- Utilities -----------------------------------------------------------------
     function loadData() {
         try {
-            const raw = localStorage.getItem(STORAGE_KEY);
-            if (!raw) return { blocks: [] };
-            return JSON.parse(raw);
+            const data = GM_getValue(STORAGE_KEY);
+            return data || { blocks: [] };
         } catch (e) {
             console.error('加载配置失败，返回空数据', e);
             return { blocks: [] };
@@ -30,7 +30,7 @@
 
     function saveData(data) {
         try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            GM_setValue(STORAGE_KEY, data);
         } catch (e) {
             console.error('保存配置失败', e);
         }
@@ -108,7 +108,7 @@
                 const newValue = value.slice(0, start) + text + value.slice(end);
                 el.value = newValue;
                 const pos = start + text.length;
-                try { el.setSelectionRange(pos, pos); } catch (e) {}
+                try { el.setSelectionRange(pos, pos); } catch (e) { }
                 el.dispatchEvent(new Event('input', { bubbles: true }));
                 el.dispatchEvent(new Event('change', { bubbles: true }));
                 return true;
@@ -199,7 +199,7 @@
 
     // Draggable
     (function makeDraggable(node, handle) {
-        let isDown = false, startX=0, startY=0, origX=0, origY=0;
+        let isDown = false, startX = 0, startY = 0, origX = 0, origY = 0;
         handle.addEventListener('pointerdown', (e) => {
             // 检查点击的是否是控制按钮
             if (e.target.closest('.orh-actions')) {
@@ -207,7 +207,7 @@
             }
 
             isDown = true;
-            try { handle.setPointerCapture(e.pointerId); } catch (err) {}
+            try { handle.setPointerCapture(e.pointerId); } catch (err) { }
             startX = e.clientX; startY = e.clientY;
             const rect = node.getBoundingClientRect();
             origX = rect.left; origY = rect.top;
@@ -324,9 +324,9 @@
                     const ctlWrap = document.createElement('div');
                     ctlWrap.className = 'orh-controls';
                     const editBtn = document.createElement('button');
-                    editBtn.type='button';
-                    editBtn.className='orh-control-small';
-                    editBtn.textContent='编辑';
+                    editBtn.type = 'button';
+                    editBtn.className = 'orh-control-small';
+                    editBtn.textContent = '编辑';
 
                     editBtn.addEventListener('mousedown', (e) => {
                         e.preventDefault();
@@ -340,9 +340,9 @@
                     editBtn.addEventListener('click', () => openEditPanel(block.title, btn.name));
 
                     const delBtn = document.createElement('button');
-                    delBtn.type='button';
-                    delBtn.className='orh-control-small';
-                    delBtn.textContent='删除';
+                    delBtn.type = 'button';
+                    delBtn.className = 'orh-control-small';
+                    delBtn.textContent = '删除';
 
                     delBtn.addEventListener('mousedown', (e) => {
                         e.preventDefault();
@@ -376,8 +376,8 @@
                 nameInput.placeholder = '按钮名称';
                 const typeSelect = document.createElement('select');
                 typeSelect.className = 'orh-select';
-                const optText = document.createElement('option'); optText.value='text'; optText.text='文本按钮';
-                const optPath = document.createElement('option'); optPath.value='path'; optPath.text='路径按钮';
+                const optText = document.createElement('option'); optText.value = 'text'; optText.text = '文本按钮';
+                const optPath = document.createElement('option'); optPath.value = 'path'; optPath.text = '路径按钮';
                 typeSelect.appendChild(optText); typeSelect.appendChild(optPath);
                 addRow.appendChild(nameInput); addRow.appendChild(typeSelect);
                 inner.appendChild(addRow);
@@ -390,9 +390,9 @@
                 contentRow.appendChild(contentInput);
 
                 const pasteBtn = document.createElement('button');
-                pasteBtn.type='button';
-                pasteBtn.className='orh-control-small';
-                pasteBtn.textContent='从剪贴板粘贴';
+                pasteBtn.type = 'button';
+                pasteBtn.className = 'orh-control-small';
+                pasteBtn.textContent = '从剪贴板粘贴';
 
                 pasteBtn.addEventListener('mousedown', (e) => {
                     e.preventDefault();
@@ -414,14 +414,14 @@
                 inner.appendChild(contentRow);
 
                 const addBtnRow = document.createElement('div');
-                addBtnRow.style.display='flex';
-                addBtnRow.style.gap='6px';
-                addBtnRow.style.marginTop='6px';
+                addBtnRow.style.display = 'flex';
+                addBtnRow.style.gap = '6px';
+                addBtnRow.style.marginTop = '6px';
 
                 const addBtn = document.createElement('button');
-                addBtn.type='button';
-                addBtn.className='orh-btn';
-                addBtn.textContent='新增按钮';
+                addBtn.type = 'button';
+                addBtn.className = 'orh-btn';
+                addBtn.textContent = '新增按钮';
 
                 addBtn.addEventListener('mousedown', (e) => {
                     e.preventDefault();
@@ -511,30 +511,30 @@
 
         modal.innerHTML = `<div style="font-weight:600;margin-bottom:8px">编辑按钮</div>`;
         const nameIn = document.createElement('input');
-        nameIn.className='orh-input';
+        nameIn.className = 'orh-input';
         nameIn.value = btn.name;
 
         const typeIn = document.createElement('select');
-        typeIn.className='orh-select';
-        const o1 = document.createElement('option'); o1.value='text'; o1.text='文本按钮';
-        const o2 = document.createElement('option'); o2.value='path'; o2.text='路径按钮';
+        typeIn.className = 'orh-select';
+        const o1 = document.createElement('option'); o1.value = 'text'; o1.text = '文本按钮';
+        const o2 = document.createElement('option'); o2.value = 'path'; o2.text = '路径按钮';
         typeIn.appendChild(o1); typeIn.appendChild(o2);
         typeIn.value = btn.type;
 
         const cont = document.createElement('textarea');
-        cont.className='orh-textarea';
+        cont.className = 'orh-textarea';
         cont.value = btn.content || '';
         cont.placeholder = "对于路径按钮，输入类似'D:\\Downloads'的路径";
 
         const save = document.createElement('button');
-        save.type='button';
-        save.className='orh-btn';
-        save.textContent='保存';
+        save.type = 'button';
+        save.className = 'orh-btn';
+        save.textContent = '保存';
 
         const can = document.createElement('button');
-        can.type='button';
-        can.className='orh-btn';
-        can.textContent='取消';
+        can.type = 'button';
+        can.className = 'orh-btn';
+        can.textContent = '取消';
 
         [save, can].forEach(btn => {
             btn.addEventListener('mousedown', (e) => {
@@ -605,9 +605,9 @@
 
     function handleImport() {
         const fi = document.createElement('input');
-        fi.type='file';
-        fi.accept='application/json';
-        fi.style.display='none';
+        fi.type = 'file';
+        fi.accept = 'application/json';
+        fi.style.display = 'none';
 
         fi.addEventListener('change', (e) => {
             const f = fi.files && fi.files[0];
